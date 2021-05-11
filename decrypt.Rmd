@@ -11,15 +11,23 @@ library(coda)
 library(stringr)
 ```
 
+##Report:
+I set up an energy function based on the pairwise frequencies. I use a for loop to show all the energies given substitution shifts from 0-25. I saw all the output and I don't see an immediate "solve" or a point where manual tweaks made sense.
+
+I haven't implemented mcmc() yet, but I'm curious how it would change the result because it looks like possible states are the possible shifts I already tested.
+
+
 ```{r}
 # read coded message
 input <- readLines("CodedMessage_Short.txt", n=1000)
-# input <- readLines("CodedMessage_Med.txt", n=1000)
+input2 <- readLines("CodedMessage_Med.txt", n=1000)
 # read frequency table
 p <-read.table("LetterPairFreqFrom7Novels.txt")
 input <- tolower(input)
 s <- strsplit(input, split = " ")
 s <- do.call(paste0, as.data.frame(s))
+s2 <- strsplit(input2, split = " ")
+s2 <- do.call(paste0, as.data.frame(s2))
 
 # p[,1]
 # 
@@ -68,7 +76,7 @@ convert <- function(strings, shift){
         # chars = paste(char,())
         letter_num = (match(substr(word, char, char),letters) + shift)
         if(!is.na(letter_num)){
-          if(letter != 0){
+          if(letter_num != 0){
           if (letter_num > 26){letter_num = letter_num %% 26}
           letter = letters[letter_num]
           new_word = paste(new_word, letter, sep = "")
@@ -80,6 +88,8 @@ convert <- function(strings, shift){
   return(new_msg)
 }
 
+
+#Finding the best energy for a shift for s
 max = 0
 best_shift = 0
 for (shift_x in 0:(length(letters)-1)){
@@ -92,5 +102,22 @@ for (shift_x in 0:(length(letters)-1)){
     best_shift = shift_x
    }
 }
+print(convert(s,shift = best_shift))
+
+
+#Finding the best energy for a shift for s2
+max = 0
+best_shift = 0
+for (shift_x in 0:(length(letters)-1)){
+  fx = energy(s,p,shift_x)
+  print(shift_x)
+  print(fx)
+  # print(convert(s,shift_x))
+  if(fx > max){
+    max = fx
+    best_shift = shift_x
+   }
+}
+print(convert(s2,shift = best_shift))
 ```
 
