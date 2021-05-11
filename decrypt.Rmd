@@ -1,0 +1,96 @@
+---
+title: "decrypt"
+author: "Ashwath Raj"
+date: "May 10, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(coda)
+library(stringr)
+```
+
+```{r}
+# read coded message
+input <- readLines("CodedMessage_Short.txt", n=1000)
+# input <- readLines("CodedMessage_Med.txt", n=1000)
+# read frequency table
+p <-read.table("LetterPairFreqFrom7Novels.txt")
+input <- tolower(input)
+s <- strsplit(input, split = " ")
+s <- do.call(paste0, as.data.frame(s))
+
+# p[,1]
+# 
+# for (word in s){
+#     for(char in 1:str_length(word)){
+#       print(char)
+#     }
+# }
+      
+#At a given substitution point, evaluate the energy
+energy <- function(strings, pairWeight, shift){
+  freqs = 0
+  alphabet <- letters#[1:26]
+  wls <- str_length(strings) #word lengths
+  
+  for (word in strings){
+    for(char in 1:(str_length(word)-1)){
+        # if (char < str_length(word)){ #Can't index past the last letter
+         letter1 = (match(substr(word,char,char),alphabet) + shift) %% 26
+         letter2 = (match(substr(word,char+1,char+1), alphabet) + shift) %% 26
+         
+         if(!is.na(letter1) & !is.na(letter2)){
+           if(letter1 != 0 & letter2 != 0){
+              freqs = freqs + (pairWeight[letter1,letter2])
+              # print(freqs)
+         }
+      }
+                # for (line in p){ #Every line of frequencies
+        #   for (letter in 1:26){ #Every letter frequency
+        #     
+        #   }
+        # }
+    }
+    # browser()
+  }
+  return(freqs)
+
+}
+
+#At a given substitution point, evaluate the energy
+convert <- function(strings, shift){
+  new_msg = ""
+  for (word in strings){
+    new_word = ""
+      for(char in 1:(str_length(word))){
+        # chars = paste(char,())
+        letter_num = (match(substr(word, char, char),letters) + shift)
+        if(!is.na(letter_num)){
+          if(letter != 0){
+          if (letter_num > 26){letter_num = letter_num %% 26}
+          letter = letters[letter_num]
+          new_word = paste(new_word, letter, sep = "")
+          }
+        }
+      }
+    new_msg = paste(new_msg, new_word, sep = " ")
+  }
+  return(new_msg)
+}
+
+max = 0
+best_shift = 0
+for (shift_x in 0:(length(letters)-1)){
+  fx = energy(s,p,shift_x)
+  print(shift_x)
+  print(fx)
+  # print(convert(s,shift_x))
+  if(fx > max){
+    max = fx
+    best_shift = shift_x
+   }
+}
+```
+
